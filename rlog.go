@@ -227,8 +227,6 @@ func (spec *filterSpec) fromString(s string, isTraceLevels bool, globalLevelDefa
 	if !isTraceLevels || globalLevel != noTraceOutput {
 		spec.filters = append(spec.filters, filter{"", globalLevel})
 	}
-
-	return
 }
 
 // matchfilters checks if given filename and trace level are accepted
@@ -630,8 +628,7 @@ func basicLog(logLevel int, traceLevel int, isLocked bool, format string, prefix
 			callerInfo = fmt.Sprintf("[%d:%d %s:%d (%s)] ", os.Getpid(),
 				getGID(), moduleAndFileName, line, callingFuncName)
 		} else {
-			callerInfo = fmt.Sprintf("[%d %s:%d (%s)] ", os.Getpid(),
-				moduleAndFileName, line, callingFuncName)
+			callerInfo = fmt.Sprintf("[%s:%d] ", moduleAndFileName, line)
 		}
 	}
 
@@ -643,7 +640,7 @@ func basicLog(logLevel int, traceLevel int, isLocked bool, format string, prefix
 		msg = fmt.Sprintln(a...)
 	}
 	levelDecoration := levelStrings[logLevel] + prefixAddition
-	logLine := fmt.Sprintf("%s%-9s: %s%s",
+	logLine := fmt.Sprintf("%s[%s] %s%s",
 		now.Format(settingDateTimeFormat), levelDecoration, callerInfo, msg)
 	if logWriterStream != nil {
 		logWriterStream.Print(logLine)
@@ -754,10 +751,12 @@ func Errorf(format string, a ...interface{}) {
 // Critical prints a message if RLOG_LEVEL is set to CRITICAL or lower.
 func Critical(a ...interface{}) {
 	basicLog(levelCrit, notATrace, false, "", "", a...)
+	os.Exit(1)
 }
 
 // Criticalf prints a message if RLOG_LEVEL is set to CRITICAL or lower, with
 // formatting.
 func Criticalf(format string, a ...interface{}) {
 	basicLog(levelCrit, notATrace, false, format, "", a...)
+	os.Exit(1)
 }
